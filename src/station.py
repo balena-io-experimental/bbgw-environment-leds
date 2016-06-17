@@ -34,10 +34,10 @@ import Adafruit_BMP.BMP085 as BMP085
 #
 # For the Beaglebone Black the library will assume bus 1 by default, which is
 # exposed with SCL = P9_19 and SDA = P9_20.
-sensor = BMP085.BMP085()
+#sensor = BMP085.BMP085()
 
 # Optionally you can override the bus number:
-#sensor = BMP085.BMP085(busnum=2)
+sensor = BMP085.BMP085(busnum=2)
 
 # You can also optionally change the BMP085 mode to one of BMP085_ULTRALOWPOWER,
 # BMP085_STANDARD, BMP085_HIGHRES, or BMP085_ULTRAHIGHRES.  See the BMP085
