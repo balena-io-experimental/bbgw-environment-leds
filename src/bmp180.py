@@ -15,14 +15,16 @@
 # http://www.raspberrypi-spy.co.uk/
 #
 #--------------------------------------
+import sys
+sys.path.append('/usr/lib/python2.7/site-packages')
+
 import smbus
 import time
 from ctypes import c_short
  
 DEVICE = 0x77 # Default device I2C address
  
-#bus = smbus.SMBus(0)  # Rev 1 Pi uses 0
-bus = smbus.SMBus(1) # Rev 2 Pi uses 1 
+bus = smbus.SMBus(2) # Beaglebone uses Bus 2
  
 def convertToString(data):
   # Simple function to convert binary data into
@@ -125,6 +127,14 @@ def main():
   (temperature,pressure)=readBmp180()
   print "Temperature : ", temperature, "C"
   print "Pressure    : ", pressure, "mbar"
-  
+
+def reading():
+  (temperature,pressure)=readBmp180()
+  print "Temperature : ", temperature, "C"
+  print "Pressure    : ", pressure, "mbar"
+
 if __name__=="__main__":
    main()
+   while True:
+     time.sleep(1)
+     reading()
