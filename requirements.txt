@@ -1,0 +1,1 @@
+-e git+https://github.com/adafruit/Adafruit_Python_BMP#egg=Adafruit_Python_BMP
