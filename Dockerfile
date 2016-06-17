@@ -1,16 +1,11 @@
-FROM resin/beaglebone-alpine-python:edge
+FROM resin/beaglebone-python:2.7
 
-# Enable OpenRC
 ENV INITSYSTEM on
 
 # Defines our working directory in container
 WORKDIR /usr/src/app
 
-# Install linux headers on Alpine
-RUN apk add --update linux-headers
-
-RUN apk add i2c-tools --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
-RUN apk add py-smbus --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
+RUN apt-get update && apt-get install i2c-tools
 
 # Copy requirements.txt first for better cache on later pushes
 COPY ./requirements.txt /requirements.txt
