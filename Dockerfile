@@ -7,7 +7,9 @@ ENV INITSYSTEM on
 WORKDIR /usr/src/app
 
 # Install linux headers on Alpine
-RUN apk update && apk add linux-headers
+RUN apk add --update linux-headers
+
+RUN apk add i2c-tools --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
 
 # Copy requirements.txt first for better cache on later pushes
 COPY ./requirements.txt /requirements.txt
