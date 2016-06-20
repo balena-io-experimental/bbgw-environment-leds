@@ -1,4 +1,4 @@
-FROM resin/beaglebone-alpine-python:edge
+FROM resin/beaglebone-alpine-python:slim
 
 # Enable OpenRC
 ENV INITSYSTEM on
