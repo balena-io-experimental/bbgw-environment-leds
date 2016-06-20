@@ -1,2 +1,2 @@
 -e git+https://github.com/adafruit/Adafruit_Python_BMP#egg=Adafruit_Python_BMP
-Adafruit_BBIO==0.0.30
+-e git+https://github.com/imrehg/adafruit-beaglebone-io-python.git#egg=adafruit-beaglebone-io-python
