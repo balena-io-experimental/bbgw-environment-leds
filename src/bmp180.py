@@ -21,6 +21,8 @@ sys.path.append('/usr/lib/python2.7/site-packages')
 import smbus
 import time
 from ctypes import c_short
+import Adafruit_BBIO.GPIO as GPIO
+
  
 DEVICE = 0x77 # Default device I2C address
  
@@ -132,9 +134,48 @@ def reading():
   (temperature,pressure)=readBmp180()
   print "Temperature : ", temperature, "C"
   print "Pressure    : ", pressure, "mbar"
+  return pressure
+
+def blink(pin, sleeptime=0.1):
+  GPIO.output(pin, GPIO.HIGH)
+  time.sleep(sleeptime)
+  GPIO.output(pin, GPIO.LOW)
+
+def calcmean(thisarray):
+  return sum(thisarray)/len(thisarray)
 
 if __name__=="__main__":
-   main()
-   while True:
-     time.sleep(1)
-     reading()
+  pin0 = "P9_14"   # GPIO_50, red
+  pin1 = "P9_16"   # GPIO_51, blue
+  sleeptime = 0.1
+  
+  GPIO.setup(pin0, GPIO.OUT)
+  GPIO.setup(pin1, GPIO.OUT)
+
+  GPIO.output(pin0, GPIO.LOW)
+  GPIO.output(pin1, GPIO.LOW)
+
+  max_pressures = 10
+  pressurediff = []
+  p0 = reading()
+  time.sleep(1)
+  p1 = reading()
+  dp01 = p1 - p0
+  pressurediff.append(dp01)
+  p0 = p1
+
+  while True:
+    time.sleep(1-sleeptime)
+    p1 = reading()
+    dp01 = p1 - p0
+    pressurediff.append(dp01)
+    meanval = calcmean(pressurediff)
+    if meanval > 0:
+      # print("Blink: {}".format(pin0))
+      blink(pin0, sleeptime)
+    else:
+      # print("Blink: {}".format(pin1))
+      blink(pin1, sleeptime)
+    p0 = p1
+    if len(pressurediff) > max_pressures:
+      pressurediff.pop(0)
