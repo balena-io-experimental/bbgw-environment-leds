@@ -7,8 +7,7 @@ ENV INITSYSTEM on
 WORKDIR /usr/src/app
 
 # Install linux headers on Alpine
-RUN apk add --update linux-headers
-RUN apk add git build-base
+RUN apk add --update linux-headers git gcc libc-dev
 RUN apk add py-smbus --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
 
 # Copy requirements.txt first for better cache on later pushes
