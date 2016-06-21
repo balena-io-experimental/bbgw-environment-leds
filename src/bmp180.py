@@ -16,8 +16,8 @@
 #
 #--------------------------------------
 import sys
+print(sys.path)
 sys.path.append('/usr/lib/python2.7/site-packages')
-sys.path.append('/usr/src/app/src')
 
 import smbus
 import time
