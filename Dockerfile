@@ -1,14 +1,13 @@
-FROM resin/beaglebone-alpine-python:slim
+FROM resin/beaglebone-python:latest
 
-# Enable OpenRC
 ENV INITSYSTEM on
 
 # Defines our working directory in container
 WORKDIR /usr/src/app
 
-# Install linux headers on Alpine (including some packages from `build-base`)
-RUN apk add --update linux-headers git gcc libc-dev
-RUN apk add py-smbus --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
+#
+RUN apt-get update && \
+    apt-get install -yq --no-install-recommends i2c-tools git build-essential
 
 # Copy requirements.txt first for better cache on later pushes
 COPY ./requirements.txt /requirements.txt
@@ -21,4 +20,3 @@ COPY . ./
 
 # main.py will run when container starts up on the device
 CMD ["python","src/bmp180.py"]
-# CMD python src/bmp180.py
