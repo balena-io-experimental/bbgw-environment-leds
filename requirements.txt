@@ -1,2 +1,2 @@
--e git+https://github.com/adafruit/Adafruit_Python_BMP#egg=Adafruit_Python_BMP
--e git+https://github.com/imrehg/adafruit-beaglebone-io-python.git#egg=adafruit-beaglebone-io-python
+-e git+https://github.com/adafruit/Adafruit_Python_BMP#egg=adafruit-bmp
+-e git+https://github.com/imrehg/adafruit-beaglebone-io-python.git#egg=adafruit-bbio
