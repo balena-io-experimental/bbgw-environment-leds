@@ -135,19 +135,16 @@ def reading():
   (temperature,pressure)=readBmp180()
   print "Temperature : ", temperature, "C"
   print "Pressure    : ", pressure, "mbar"
-  return pressure
+  return pressure, temperature
 
 def blink(pin, sleeptime=0.1):
   GPIO.output(pin, GPIO.HIGH)
   time.sleep(sleeptime)
   GPIO.output(pin, GPIO.LOW)
 
-def calcmean(thisarray):
-  return sum(thisarray)/len(thisarray)
-
 if __name__=="__main__":
-  pin0 = "P9_14"   # GPIO_50, red
-  pin1 = "P9_16"   # GPIO_51, blue
+  pin0 = "P9_14"   # GPIO_50, red, up
+  pin1 = "P9_16"   # GPIO_51, blue, down
   sleeptime = 0.1
   
   GPIO.setup(pin0, GPIO.OUT)
@@ -156,27 +153,34 @@ if __name__=="__main__":
   GPIO.output(pin0, GPIO.LOW)
   GPIO.output(pin1, GPIO.LOW)
 
-  max_pressures = 10
-  pressurediff = []
-  p0 = reading()
-  time.sleep(1)
-  p1 = reading()
-  dp01 = p1 - p0
-  pressurediff.append(dp01)
-  p0 = p1
+  TEST_TEMPERATURE = True
+
+  alpha = 0.15
+  beta = 0.05
+
+  p, t = reading()
+  if TEST_TEMPERATURE:
+    x = t
+  else:
+    x = p
+  a = x
+  b = 0
+  print("{},{},{}".format(x, a, b))
 
   while True:
     time.sleep(1-sleeptime)
-    p1 = reading()
-    dp01 = p1 - p0
-    pressurediff.append(dp01)
-    meanval = calcmean(pressurediff)
-    if meanval > 0:
+    p, t = reading()
+    if TEST_TEMPERATURE:
+      x = t
+    else:
+      x = p
+    aold, bold = a, b
+    a = alpha * x + (1 - alpha) * (aold + bold)
+    b = beta * (a - aold) + (1 - beta) * bold
+    print("{},{},{}".format(x, a, b))
+    if b < 0:
       # print("Blink: {}".format(pin0))
       blink(pin0, sleeptime)
     else:
       # print("Blink: {}".format(pin1))
       blink(pin1, sleeptime)
-    p0 = p1
-    if len(pressurediff) > max_pressures:
-      pressurediff.pop(0)
