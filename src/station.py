@@ -1,51 +1,69 @@
 #!/usr/bin/python
-# Copyright (c) 2014 Adafruit Industries
-# Author: Tony DiCola
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+# -*- coding: utf-8 -*-
+import os
+import time
 
-# Can enable debug output by uncommenting:
-import logging
-logging.basicConfig(level=logging.DEBUG)
+import Adafruit_BMP.BMP085 as BMP085   # Actually using it for BMP180
+import Adafruit_BBIO.GPIO as GPIO
 
-import Adafruit_BMP.BMP085 as BMP085
+def blink(pin, blinktime=0.1):
+    GPIO.output(pin, GPIO.HIGH)
+    time.sleep(blinktime)
+    GPIO.output(pin, GPIO.LOW)
 
-# Default constructor will pick a default I2C bus.
-#
-# For the Raspberry Pi this means you should hook up to the only exposed I2C bus
-# from the main GPIO header and the library will figure out the bus number based
-# on the Pi's revision.
-#
-# For the Beaglebone Black the library will assume bus 1 by default, which is
-# exposed with SCL = P9_19 and SDA = P9_20.
-#sensor = BMP085.BMP085()
+if __name__ == "__main__":
+    # Set up GPIO pins
+    pin0 = "P9_14"   # GPIO_50, blue, down
+    GPIO.setup(pin0, GPIO.OUT)
+    GPIO.output(pin0, GPIO.LOW)
 
-# Optionally you can override the bus number:
-sensor = BMP085.BMP085(busnum=2)
+    pin1 = "P9_16"   # GPIO_51, red, up
+    GPIO.setup(pin1, GPIO.OUT)
+    GPIO.output(pin1, GPIO.LOW)
 
-# You can also optionally change the BMP085 mode to one of BMP085_ULTRALOWPOWER,
-# BMP085_STANDARD, BMP085_HIGHRES, or BMP085_ULTRAHIGHRES.  See the BMP085
-# datasheet for more details on the meanings of each mode (accuracy and power
-# consumption are primarily the differences).  The default mode is STANDARD.
-#sensor = BMP085.BMP085(mode=BMP085.BMP085_ULTRAHIGHRES)
+    blinkshort = 0.1
+    blinklong = 0.6
 
-print('Temp = {0:0.2f} *C'.format(sensor.read_temperature()))
-print('Pressure = {0:0.2f} Pa'.format(sensor.read_pressure()))
-print('Altitude = {0:0.2f} m'.format(sensor.read_altitude()))
-print('Sealevel Pressure = {0:0.2f} Pa'.format(sensor.read_sealevel_pressure()))
+    sensor = BMP085.BMP085(busnum=2, mode=BMP085.BMP085_ULTRAHIGHRES)
+
+    # Default is to monitor the temperature
+    TEST_PRESSURE = True if os.getenv('TEST_PRESSURE', default='0') == '1' else False
+
+    if TEST_PRESSURE:
+        reading = sensor.read_pressure
+    else:
+        reading = sensor.read_temperature
+
+    # Holt-Winters parameters
+    alpha = 0.15
+    beta = 0.05
+
+    # Set up initial values
+    x = reading()
+    a = x
+    b = 0
+    blinktime = blinkshort
+    print("{},{},{}".format(x, a, b))
+
+    try:
+        PERIOD = int(os.getenv('PERIOD', default='1'))
+    except ValueError:
+        PERIOD = 1
+    if PERIOD < 1:
+        PERIOD = 1
+
+    while True:
+        time.sleep(PERIOD - blinktime)
+        x = reading()
+        aold, bold = a, b
+        a = alpha * x + (1 - alpha) * (aold + bold)
+        b = beta * (a - aold) + (1 - beta) * bold
+        print("{0:0.1f},{1:0.3f},{2:0.3f}".format(x, a, b))
+        # Do long blink if temperature change is more than 1 unit/min
+        blinktime = blinklong if abs(b) >= 1 / 60.0 * PERIOD else blinkshort
+        if b < 0:
+            # print("Blink: {}".format(pin0))
+            blink(pin0, blinktime)
+        else:
+            # print("Blink: {}".format(pin1))
+            blink(pin1, blinktime)

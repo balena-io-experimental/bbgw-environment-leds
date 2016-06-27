@@ -23,4 +23,4 @@ RUN apt-get purge git build-essential
 COPY . ./
 
 # main.py will run when container starts up on the device
-CMD ["python","src/bmp180.py"]
+CMD ["python","src/station.py"]
