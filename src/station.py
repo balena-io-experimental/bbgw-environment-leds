@@ -7,7 +7,7 @@ import Adafruit_BMP.BMP085 as BMP085   # Actually using it for BMP180
 import Adafruit_BBIO.GPIO as GPIO
 
 def blink(pin, blinktime=0.1):
-    blinks([pins], blinktime)
+    blinks([pin], blinktime)
 
 def blinks(pins, blinktime=0.1):
     for pin in pins:
